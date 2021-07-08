@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+$(clusterName)
+$(googleProject)
+$(jupyterDockerImage)
+$(rstudioDockerImage)
+$(proxyDockerImage)
+$(jupyterUserScriptUri)
+$(jupyterStartUserScriptUri)
+$(jupyterServiceAccountCredentials)
+$(jupyterServerExtensions)
+$(jupyterNbExtensions)
+$(jupyterCombinedExtensions)
+$(jupyterUserScriptOutputUri)
+$(jupyterNotebookConfigUri)
+$(jupyterNotebookFrontendConfigUri)
+$(customEnvVarsConfigUri)
+$(memLimit)

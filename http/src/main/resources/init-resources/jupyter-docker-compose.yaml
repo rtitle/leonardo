@@ -1,0 +1,53 @@
+# Note: we need to stay on docker-compose version 2 because version 3 doesn't support
+# configuring memory options in container mode. See discussion in:
+# https://docs.docker.com/compose/compose-file/#resources
+# https://github.com/docker/compose/issues/4513
+version: '2.4'
+services:
+  jupyter:
+    container_name: "${JUPYTER_SERVER_NAME}"
+    image: "${JUPYTER_DOCKER_IMAGE}"
+    # Override entrypoint with a placeholder to keep the container running indefinitely.
+    # The runtime init script will run some scripts as root and then start pyspark as
+    # jupyter-user via docker exec.
+    entrypoint: "tail -f /dev/null"
+    network_mode: host
+    volumes:
+      # shared with welder
+      - ${WORK_DIRECTORY}:${NOTEBOOKS_DIR}
+      - /usr/lib/bigtop-utils:/usr/lib/bigtop-utils
+      - /usr/lib/hadoop:/usr/lib/hadoop
+      - /usr/lib/hadoop-hdfs:/usr/lib/hadoop-hdfs
+      - /usr/lib/hadoop-mapreduce:/usr/lib/hadoop-mapreduce
+      - /usr/lib/hadoop-yarn:/usr/lib/hadoop-yarn
+      - /usr/lib/hive:/usr/lib/hive
+      - /usr/lib/pig:/usr/lib/pig
+      - /etc/hadoop:/etc/hadoop
+      - /usr/lib/spark:/usr/lib/spark
+      - /etc/spark:/etc/spark
+      - /etc/hive:/etc/hive
+      - /usr/bin/pyspark:/usr/bin/pyspark
+      - /usr/bin/hdfs:/usr/bin/hdfs
+      - /usr/bin/hadoop:/usr/bin/hadoop
+      - /usr/bin/spark-submit:/usr/bin/spark-submit
+      - /usr/bin/yarn:/usr/bin/yarn
+      - /usr/bin/pig:/usr/bin/pig
+      - /hadoop:/hadoop
+      - /hadoop_gcs_connector_metadata_cache:/hadoop_gcs_connector_metadata_cache
+      - /usr/local/share/google/dataproc:/usr/local/share/google/dataproc
+    restart: always
+    environment:
+      GOOGLE_PROJECT: "${GOOGLE_PROJECT}"
+      WORKSPACE_NAMESPACE: "${GOOGLE_PROJECT}"
+      CLUSTER_NAME: "${RUNTIME_NAME}"
+      RUNTIME_NAME: "${RUNTIME_NAME}"
+      OWNER_EMAIL: "${OWNER_EMAIL}"
+      # Value must be the string "true" to enable.
+      WELDER_ENABLED: "${WELDER_ENABLED}"
+      NOTEBOOKS_DIR: "${NOTEBOOKS_DIR}"
+      MEM_LIMIT: "${MEM_LIMIT}"
+    env_file:
+      - /var/google_application_credentials.env
+      - /var/custom_env_vars.env
+    # See https://docs.docker.com/engine/reference/run/#user-memory-constraints
+    mem_limit: ${MEM_LIMIT}   # hard limit on memory consumption by the container
